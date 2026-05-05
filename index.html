@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Қазақстан Қылмыстық Статистика 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --red: #E8281A;
+    --red-dark: #9B1A10;
+    --red-glow: rgba(232,40,26,0.15);
+    --gold: #C8A951;
+    --gold-light: #F0D080;
+    --bg: #0A0B0E;
+    --bg2: #111318;
+    --bg3: #181B22;
+    --bg4: #1E2230;
+    --text: #E8EAF0;
+    --text2: #9AA0B4;
+    --text3: #5C6278;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --teal: #1DB8A0;
+    --amber: #E89020;
+    --blue: #2D7DD2;
+    --purple: #8B5CF6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* HEADER */
+  .header {
+    position: relative;
+    background: linear-gradient(180deg, rgba(232,40,26,0.08) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border2);
+    padding: 0;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 20px;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kz-emblem {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  .header-titles { flex: 1; }
+  .header-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(22px, 5vw, 38px);
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(232,40,26,0.12);
+    border: 1px solid rgba(232,40,26,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--red);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* KPIS */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .kpi-card {
+    background: var(--bg);
+    padding: 16px 20px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .kpi-card:hover { background: var(--bg2); }
+  .kpi-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 6px;
+  }
+  .kpi-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(24px, 4vw, 36px);
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--text);
+  }
+  .kpi-val.red { color: var(--red); }
+  .kpi-val.gold { color: var(--gold); }
+  .kpi-val.teal { color: var(--teal); }
+  .kpi-delta {
+    font-size: 11px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .kpi-delta.up { color: var(--red); }
+  .kpi-delta.down { color: var(--teal); }
+
+  /* MAIN LAYOUT */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* SECTION TITLES */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .card-subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent);
+  }
+
+  /* GRIDS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: var(--red);
+    color: #fff;
+  }
+  .tab-btn:hover:not(.active) {
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* REGION TABLE */
+  .region-table { width: 100%; border-collapse: collapse; }
+  .region-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .region-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .region-table tr:hover td { background: rgba(255,255,255,0.025); }
+  .rank-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--text3);
+    width: 30px;
+  }
+  .bar-inline {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--red);
+    margin-top: 4px;
+    transition: width 1s ease;
+  }
+  .severity-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .sev-high { background: rgba(232,40,26,0.15); color: var(--red); }
+  .sev-med { background: rgba(232,144,32,0.15); color: var(--amber); }
+  .sev-low { background: rgba(29,184,160,0.15); color: var(--teal); }
+
+  /* CRIME TYPE BARS */
+  .crime-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .crime-bar-label {
+    font-size: 12px;
+    color: var(--text2);
+    width: 140px;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+  .crime-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .crime-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .crime-bar-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* MAP PLACEHOLDER */
+  .kz-map-svg {
+    width: 100%;
+    max-height: 320px;
+  }
+
+  /* TREND SPARKLINE */
+  .spark-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .spark-name { font-size: 13px; color: var(--text); width: 160px; flex-shrink: 0; }
+  .spark-canvas { flex: 1; height: 32px; }
+  .spark-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+    width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* HEATMAP */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(12, 1fr);
+    gap: 2px;
+    font-size: 10px;
+  }
+  .hm-cell {
+    height: 28px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+  }
+  .hm-label { color: var(--text3); font-size: 9px; justify-content: flex-start; }
+  .hm-month { color: var(--text3); font-size: 9px; }
+
+  /* PROGRESS RINGS */
+  .rings-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: center;
+  }
+  .ring-item svg { overflow: visible; }
+  .ring-label { font-size: 11px; color: var(--text2); margin-top: 6px; line-height: 1.3; }
+  .ring-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  /* FOOTER */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-left { font-size: 11px; color: var(--text3); }
+  .footer-right {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+    .heatmap-grid { grid-template-columns: 40px repeat(6, 1fr); }
+    .rings-row { grid-template-columns: repeat(3, 1fr); }
+    .crime-bar-label { width: 110px; font-size: 11px; }
+    .header-main { font-size: 22px; }
+  }
+  @media (max-width: 480px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .region-table th:nth-child(4),
+    .region-table td:nth-child(4) { display: none; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card { animation: fadeInUp 0.4s ease both; }
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+
+  /* TOOLTIP */
+  .tooltip {
+    position: absolute;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+    display: none;
+  }
+
+  .section-gap { margin-bottom: 28px; }
+  .mt16 { margin-top: 16px; }
+  .highlight-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--gold);
+  }
+  .subtext { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  .map-region {
+    transition: opacity 0.2s, filter 0.2s;
+    cursor: pointer;
+  }
+  .map-region:hover { opacity: 0.8; filter: brightness(1.3); }
+
+  .alert-strip {
+    background: linear-gradient(90deg, rgba(232,40,26,0.1), rgba(232,40,26,0.05));
+    border: 1px solid rgba(232,40,26,0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .alert-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .alert-text strong { color: var(--text); }
+
+  .source-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  .mini-stat-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .mini-stat {
+    flex: 1;
+    min-width: 80px;
+    background: var(--bg3);
+    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+  }
+  .mini-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .mini-stat-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <svg class="kz-emblem" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="29" fill="#1A2030" stroke="#C8A951" stroke-width="1.5"/>
+        <circle cx="30" cy="30" r="22" fill="none" stroke="#C8A951" stroke-width="0.5" opacity="0.4"/>
+        <path d="M30 10 L32 20 L30 18 L28 20 Z" fill="#C8A951"/>
+        <path d="M30 50 L32 40 L30 42 L28 40 Z" fill="#C8A951"/>
+        <path d="M10 30 L20 28 L18 30 L20 32 Z" fill="#C8A951"/>
+        <path d="M50 30 L40 28 L42 30 L40 32 Z" fill="#C8A951"/>
+        <circle cx="30" cy="30" r="8" fill="none" stroke="#C8A951" stroke-width="1.5"/>
+        <circle cx="30" cy="30" r="3" fill="#C8A951"/>
+        <text x="30" y="34" text-anchor="middle" font-family="serif" font-size="8" fill="#C8A951" font-weight="bold">ҚР</text>
+      </svg>
+      <div class="header-titles">
+        <div class="header-tag">● ҚАЗАҚСТАН РЕСПУБЛИКАСЫ — ДЕРЕКТЕР ПОРТАЛЫ</div>
+        <div class="header-main">ҚЫЛМЫСТЫҚ СТАТИСТИКА 2026</div>
+        <div class="header-sub">Ішкі істер министрлігі · Бас прокуратура · Ұлттық статистика бюросы</div>
+      </div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        ТІКЕЛЕЙ · 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Барлық қылмыс</div>
+      <div class="kpi-val red">287 640</div>
+      <div class="kpi-delta up">▲ 3.2% өткен жылмен</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ауыр қылмыс</div>
+      <div class="kpi-val gold">41 820</div>
+      <div class="kpi-delta up">▲ 1.8% өткен жылмен</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ашылу пайызы</div>
+      <div class="kpi-val teal">67.4%</div>
+      <div class="kpi-delta down">▼ 0.6% өткен жылмен</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Сотталғандар</div>
+      <div class="kpi-val">124 370</div>
+      <div class="kpi-delta down">▼ 2.1% өткен жылмен</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAVIGATION -->
+<div class="main">
+  <nav class="nav-tabs" role="tablist" aria-label="Деректер бөлімдері">
+    <button class="tab-btn active" onclick="switchTab('overview')" role="tab">Шолу</button>
+    <button class="tab-btn" onclick="switchTab('regions')" role="tab">Өңірлер</button>
+    <button class="tab-btn" onclick="switchTab('types')" role="tab">Қылмыс түрлері</button>
+    <button class="tab-btn" onclick="switchTab('trends')" role="tab">Трендтер</button>
+    <button class="tab-btn" onclick="switchTab('demo')" role="tab">Демография</button>
+    <button class="tab-btn" onclick="switchTab('cyber')" role="tab">Киберқылмыс</button>
+  </nav>
+
+  <!-- =================== OVERVIEW =================== -->
+  <div id="panel-overview" class="panel active">
+
+    <div class="alert-strip">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-text">
+        <strong>2026 жылдың 1-жартысы бойынша:</strong> Алматы облысы мен Шымкент қаласында мүлікке байланысты қылмыстар 8,4%-ға өсті. Киберқылмыстар бойынша ұлттық деңгейде 34%-дық өсім тіркелді. ІІМ профилактикалық шаралар пакетін іске қосты.
+      </div>
+    </div>
+
+    <div class="section-gap">
+      <div class="section-head">
+        <div class="section-label">Негізгі диаграммалар</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Айлық қылмыс динамикасы</div>
+          <div class="card-subtitle">2025–2026 жылдармен салыстыру</div>
+          <div style="position:relative;height:220px;">
+            <canvas id="monthlyChart" role="img" aria-label="Айлық қылмыстар 2025 және 2026">Айлық деректер диаграммасы</canvas>
+          </div>
+          <div class="source-tag">Дерек көзі: ҚР ІІМ статистикалық есебі, 2026</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Қылмыс категориялары</div>
+          <div class="card-subtitle">2026 жыл — үлестік бөлінісі</div>
+          <div style="position:relative;height:180px;">
+            <canvas id="catChart" role="img" aria-label="Қылмыс категориялары пай диаграммасы">Категориялар</canvas>
+          </div>
+          <div id="cat-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+          <div class="source-tag">Дерек көзі: ҚР Бас прокуратурасы, 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-gap">
+      <div class="section-head">
+        <div class="section-label">Негізгі көрсеткіштер</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">Жас топтары</div>
+          <div class="card-subtitle">Сотталғандардың жасы</div>
+          <div style="position:relative;height:160px;">
+            <canvas id="ageChart" role="img" aria-label="Жас топтары диаграммасы">Жас топтары</canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Ашылу деңгейі</div>
+          <div class="card-subtitle">Өңірлер бойынша %, 2026</div>
+          <div class="rings-row mt16">
+            <div class="ring-item">
+              <svg width="64" height="64" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#1E2230" stroke-width="6"/>
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#E8281A" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="49.2" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+                <text x="32" y="37" text-anchor="middle" fill="#E8EAF0" font-family="Bebas Neue" font-size="14">67%</text>
+              </svg>
+              <div class="ring-label">Барлығы</div>
+            </div>
+            <div class="ring-item">
+              <svg width="64" height="64" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#1E2230" stroke-width="6"/>
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#1DB8A0" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="27" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+                <text x="32" y="37" text-anchor="middle" fill="#E8EAF0" font-family="Bebas Neue" font-size="14">82%</text>
+              </svg>
+              <div class="ring-label">Астана</div>
+            </div>
+            <div class="ring-item">
+              <svg width="64" height="64" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#1E2230" stroke-width="6"/>
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#C8A951" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="57" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+                <text x="32" y="37" text-anchor="middle" fill="#E8EAF0" font-family="Bebas Neue" font-size="14">62%</text>
+              </svg>
+              <div class="ring-label">Алматы</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Жыл бойы серпін</div>
+          <div class="card-subtitle">Алдыңғы 5 жылмен салыстыру</div>
+          <div style="position:relative;height:160px;">
+            <canvas id="trendLineChart" role="img" aria-label="5 жылдық серпін">Серпін</canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-gap">
+      <div class="section-head">
+        <div class="section-label">Ай бойынша жылулық картасы</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Қылмыс жиілігі — Айлық / Санат жылулық картасы</div>
+        <div class="card-subtitle">Қызылдау = жоғары жиілік · 2026 жыл</div>
+        <div id="heatmap-cont" style="overflow-x:auto;margin-top:8px;"></div>
+        <div class="source-tag">Дерек көзі: ҚР Ұлттық статистика бюросы, 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== REGIONS =================== -->
+  <div id="panel-regions" class="panel">
+    <div class="grid-2-1">
+      <div class="card">
+        <div class="card-title">Қазақстан өңірлері — Қылмыс картасы</div>
+        <div class="card-subtitle">Жан басына шаққандағы деңгей · 100 000 адамға · 2026</div>
+        <svg class="kz-map-svg" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Қазақстан қылмыс картасы">
+          <defs>
+            <linearGradient id="mapGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#0A3020"/>
+              <stop offset="50%" style="stop-color:#8B3010"/>
+              <stop offset="100%" style="stop-color:#E8281A"/>
+            </linearGradient>
+          </defs>
+          <!-- Simplified KZ regions as stylized shapes -->
+          <!-- West KZ - Атырау -->
+          <ellipse cx="90" cy="200" rx="70" ry="55" fill="#3D1A14" stroke="#E8281A" stroke-width="1" class="map-region" data-region="Атырау" data-val="1840"/>
+          <text x="90" y="196" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Атырау</text>
+          <text x="90" y="208" text-anchor="middle" fill="#E8281A" font-family="Bebas Neue" font-size="13">1840</text>
+          <!-- Маңғыстау -->
+          <ellipse cx="85" cy="310" rx="60" ry="40" fill="#2A1A28" stroke="#8B5CF6" stroke-width="1" class="map-region" data-region="Маңғыстау" data-val="2100"/>
+          <text x="85" y="306" text-anchor="middle" fill="#E8EAF0" font-size="8" font-family="IBM Plex Sans">Маңғыстау</text>
+          <text x="85" y="318" text-anchor="middle" fill="#C8A951" font-family="Bebas Neue" font-size="12">2100</text>
+          <!-- БҚО -->
+          <ellipse cx="175" cy="130" rx="65" ry="45" fill="#1E2820" stroke="#1DB8A0" stroke-width="1" class="map-region" data-region="БҚО" data-val="1620"/>
+          <text x="175" y="126" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">БҚО</text>
+          <text x="175" y="138" text-anchor="middle" fill="#1DB8A0" font-family="Bebas Neue" font-size="13">1620</text>
+          <!-- Ақтөбе -->
+          <ellipse cx="195" cy="230" rx="70" ry="55" fill="#1E2820" stroke="#1DB8A0" stroke-width="1" class="map-region" data-region="Ақтөбе" data-val="1790"/>
+          <text x="195" y="226" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Ақтөбе</text>
+          <text x="195" y="238" text-anchor="middle" fill="#1DB8A0" font-family="Bebas Neue" font-size="13">1790</text>
+          <!-- Қостанай -->
+          <ellipse cx="290" cy="100" rx="70" ry="50" fill="#1E2230" stroke="#2D7DD2" stroke-width="1" class="map-region" data-region="Қостанай" data-val="1580"/>
+          <text x="290" y="96" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Қостанай</text>
+          <text x="290" y="108" text-anchor="middle" fill="#2D7DD2" font-family="Bebas Neue" font-size="13">1580</text>
+          <!-- СҚО -->
+          <ellipse cx="380" cy="80" rx="60" ry="40" fill="#1E2230" stroke="#2D7DD2" stroke-width="1" class="map-region" data-region="СҚО" data-val="1450"/>
+          <text x="380" y="76" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">СҚО</text>
+          <text x="380" y="88" text-anchor="middle" fill="#2D7DD2" font-family="Bebas Neue" font-size="12">1450</text>
+          <!-- Астана -->
+          <ellipse cx="420" cy="150" rx="50" ry="38" fill="#2A1020" stroke="#E8281A" stroke-width="1.5" class="map-region" data-region="Астана" data-val="3210"/>
+          <text x="420" y="146" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Астана</text>
+          <text x="420" y="158" text-anchor="middle" fill="#E8281A" font-family="Bebas Neue" font-size="14">3210</text>
+          <!-- ШҚО -->
+          <ellipse cx="580" cy="140" rx="75" ry="55" fill="#1A1E18" stroke="#639920" stroke-width="1" class="map-region" data-region="ШҚО" data-val="1680"/>
+          <text x="580" y="136" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">ШҚО</text>
+          <text x="580" y="148" text-anchor="middle" fill="#97C459" font-family="Bebas Neue" font-size="13">1680</text>
+          <!-- Павлодар -->
+          <ellipse cx="495" cy="100" rx="55" ry="38" fill="#1E2230" stroke="#2D7DD2" stroke-width="1" class="map-region" data-region="Павлодар" data-val="1720"/>
+          <text x="495" y="96" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Павлодар</text>
+          <text x="495" y="108" text-anchor="middle" fill="#2D7DD2" font-family="Bebas Neue" font-size="12">1720</text>
+          <!-- Қарағанды -->
+          <ellipse cx="430" cy="245" rx="75" ry="60" fill="#261420" stroke="#E89020" stroke-width="1" class="map-region" data-region="Қарағанды" data-val="2460"/>
+          <text x="430" y="241" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Қарағанды</text>
+          <text x="430" y="253" text-anchor="middle" fill="#E89020" font-family="Bebas Neue" font-size="14">2460</text>
+          <!-- Жамбыл -->
+          <ellipse cx="330" cy="320" rx="65" ry="45" fill="#261420" stroke="#E89020" stroke-width="1" class="map-region" data-region="Жамбыл" data-val="2020"/>
+          <text x="330" y="316" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Жамбыл</text>
+          <text x="330" y="328" text-anchor="middle" fill="#E89020" font-family="Bebas Neue" font-size="13">2020</text>
+          <!-- Шымкент -->
+          <ellipse cx="270" cy="370" rx="55" ry="38" fill="#3D1A14" stroke="#E8281A" stroke-width="1.5" class="map-region" data-region="Шымкент" data-val="2890"/>
+          <text x="270" y="366" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Шымкент</text>
+          <text x="270" y="378" text-anchor="middle" fill="#E8281A" font-family="Bebas Neue" font-size="13">2890</text>
+          <!-- Түркістан -->
+          <ellipse cx="185" cy="370" rx="60" ry="42" fill="#261414" stroke="#E89020" stroke-width="1" class="map-region" data-region="Түркістан" data-val="1960"/>
+          <text x="185" y="366" text-anchor="middle" fill="#E8EAF0" font-size="8.5" font-family="IBM Plex Sans">Түркістан</text>
+          <text x="185" y="378" text-anchor="middle" fill="#E89020" font-family="Bebas Neue" font-size="13">1960</text>
+          <!-- Алматы обл -->
+          <ellipse cx="530" cy="320" rx="70" ry="50" fill="#261420" stroke="#E89020" stroke-width="1" class="map-region" data-region="Алматы обл." data-val="2150"/>
+          <text x="530" y="316" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Алматы обл.</text>
+          <text x="530" y="328" text-anchor="middle" fill="#E89020" font-family="Bebas Neue" font-size="13">2150</text>
+          <!-- Алматы қ -->
+          <ellipse cx="625" cy="310" rx="55" ry="42" fill="#3D1A14" stroke="#E8281A" stroke-width="2" class="map-region" data-region="Алматы қ." data-val="3480"/>
+          <text x="625" y="306" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Алматы қ.</text>
+          <text x="625" y="318" text-anchor="middle" fill="#E8281A" font-family="Bebas Neue" font-size="14">3480</text>
+          <!-- Абай -->
+          <ellipse cx="665" cy="220" rx="52" ry="38" fill="#1A1E18" stroke="#639920" stroke-width="1" class="map-region" data-region="Абай" data-val="1540"/>
+          <text x="665" y="216" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Абай</text>
+          <text x="665" y="228" text-anchor="middle" fill="#97C459" font-family="Bebas Neue" font-size="12">1540</text>
+          <!-- Жетісу -->
+          <ellipse cx="720" cy="310" rx="48" ry="38" fill="#1A1E18" stroke="#639920" stroke-width="1" class="map-region" data-region="Жетісу" data-val="1480"/>
+          <text x="720" y="306" text-anchor="middle" fill="#E8EAF0" font-size="9" font-family="IBM Plex Sans">Жетісу</text>
+          <text x="720" y="318" text-anchor="middle" fill="#97C459" font-family="Bebas Neue" font-size="12">1480</text>
+
+          <!-- LEGEND -->
+          <rect x="10" y="400" width="12" height="8" rx="2" fill="#1DB8A0"/>
+          <text x="26" y="408" fill="#9AA0B4" font-size="9" font-family="IBM Plex Sans">Төмен (&lt;1700)</text>
+          <rect x="115" y="400" width="12" height="8" rx="2" fill="#E89020"/>
+          <text x="131" y="408" fill="#9AA0B4" font-size="9" font-family="IBM Plex Sans">Орта (1700–2500)</text>
+          <rect x="250" y="400" width="12" height="8" rx="2" fill="#E8281A"/>
+          <text x="266" y="408" fill="#9AA0B4" font-size="9" font-family="IBM Plex Sans">Жоғары (&gt;2500)</text>
+          <text x="400" y="440" text-anchor="middle" fill="#5C6278" font-size="8" font-family="IBM Plex Mono">100 000 адамға шаққандағы қылмыс саны · ҚР ІІМ 2026</text>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="card-title">ТОП өңірлер</div>
+        <div class="card-subtitle">100к адамға · деңгейі бойынша</div>
+        <div id="region-bars" style="margin-top:12px;"></div>
+        <div class="source-tag">Дерек көзі: ҚР ІІМ, 2026</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Өңірлік толық кесте</div>
+        <div class="card-subtitle">Барлық деректер · 2026 жыл</div>
+        <div style="overflow-x:auto;">
+          <table class="region-table" id="regionTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Өңір</th>
+                <th>Барлығы</th>
+                <th>100к-ға</th>
+                <th>Ауыр</th>
+                <th>Ашылды</th>
+                <th>Деңгей</th>
+              </tr>
+            </thead>
+            <tbody id="regionBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== TYPES =================== -->
+  <div id="panel-types" class="panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Қылмыс түрлері — Егжей-тегжей</div>
+        <div class="card-subtitle">Барлық тіркелген қылмыстар · 2026</div>
+        <div id="crime-type-bars" style="margin-top:16px;"></div>
+        <div class="source-tag">Дерек көзі: ҚР Бас прокуратурасы, 2026</div>
+      </div>
+      <div class="card">
+        <div class="card-title">2025–2026 Өзгеріс динамикасы</div>
+        <div class="card-subtitle">Санат бойынша пайыздық өсім/кему</div>
+        <div style="position:relative;height:360px;">
+          <canvas id="changeChart" role="img" aria-label="Қылмыс өзгерісі 2025–2026">Өзгеріс</canvas>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Қылмыс санаттарының 5 жылдық серпіні</div>
+        <div class="card-subtitle">2022–2026 · Негізгі категориялар</div>
+        <div style="position:relative;height:240px;">
+          <canvas id="cat5yrChart" role="img" aria-label="5 жылдық серпін">Серпін</canvas>
+        </div>
+        <div class="source-tag">Дерек көзі: ҚР ІІМ, Бас прокуратура статистикалық бюллетені, 2022–2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== TRENDS =================== -->
+  <div id="panel-trends" class="panel">
+    <div class="card section-gap">
+      <div class="card-title">Ай сайынғы серпін 2023–2026</div>
+      <div class="card-subtitle">Жалпы тіркелген қылмыстар — 3 жылдық салыстырма</div>
+      <div style="position:relative;height:280px;">
+        <canvas id="trend3yrChart" role="img" aria-label="3 жылдық тренд">3 жылдық тренд</canvas>
+      </div>
+      <div class="source-tag">Дерек көзі: ҚР ІІМ ресми статистикасы, 2023–2026</div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Апта күндері бойынша</div>
+        <div class="card-subtitle">Қылмыс жиілігі — аптаның күні</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="weekdayChart" role="img" aria-label="Апта күндері">Апта</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Тәулік уақыты</div>
+        <div class="card-subtitle">Сағат бойынша қылмыс профилі</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="hourChart" role="img" aria-label="Сағат бойынша">Сағат</canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== DEMO =================== -->
+  <div id="panel-demo" class="panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Жас & Жыныс</div>
+        <div class="card-subtitle">Сотталғандар · 2026</div>
+        <div style="position:relative;height:260px;">
+          <canvas id="demoChart" role="img" aria-label="Жас және жыныс">Жас/жыныс</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Жасөспірім қылмысы</div>
+        <div class="card-subtitle">18 жасқа дейін · 2022–2026</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="juvenileChart" role="img" aria-label="Жасөспірім қылмысы">Жасөспірім</canvas>
+        </div>
+        <div class="mini-stat-row">
+          <div class="mini-stat">
+            <div class="mini-stat-val">8 240</div>
+            <div class="mini-stat-lbl">Жасөспірім қылмыскер</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val">91%</div>
+            <div class="mini-stat-lbl">Ер жыныс</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val">▲7.2%</div>
+            <div class="mini-stat-lbl" style="color:var(--red)">Өсім 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Білім деңгейі & Жұмыссыздық</div>
+        <div class="card-subtitle">Сотталғандардың социалдық профилі · 2026</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="socialChart" role="img" aria-label="Социалдық профиль">Социалдық</canvas>
+        </div>
+        <div class="source-tag">Дерек көзі: ҚР Әділет министрлігі, 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== CYBER =================== -->
+  <div id="panel-cyber" class="panel">
+    <div class="alert-strip">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-text">
+        <strong>КИБЕРҚАУІП 2026:</strong> Қазақстанда киберқылмыстар 2022 жылдан бері <strong style="color:var(--red)">3.4 есе</strong> өсті. Жалпы шығын: <strong style="color:var(--gold)">₸47.8 млрд</strong>. Ең жиі: фишинг (41%), онлайн алаяқтық (33%), деректерді ұрлау (18%).
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Киберқылмыс өсімі</div>
+        <div class="card-subtitle">2019–2026 · Жылдық динамика</div>
+        <div style="position:relative;height:220px;">
+          <canvas id="cyberTrendChart" role="img" aria-label="Киберқылмыс тренді">Кибер</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Киберқылмыс түрлері</div>
+        <div class="card-subtitle">Үлесі % · 2026</div>
+        <div style="position:relative;height:180px;">
+          <canvas id="cyberTypeChart" role="img" aria-label="Киберқылмыс түрлері">Кибер түрлер</canvas>
+        </div>
+        <div id="cyber-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Шығын сомасы бойынша — Жертвалар профилі</div>
+        <div class="card-subtitle">Жас топтары · Ең жиі шабуыл · 2026</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="cyberVictimChart" role="img" aria-label="Жертвалар профилі">Жертвалар</canvas>
+        </div>
+        <div class="source-tag">Дерек көзі: ҚР Ұлттық киберқауіпсіздік орталығы, 2026</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer style="z-index:1;position:relative;">
+  <div class="footer">
+    <div class="footer-left">
+      ҚР Ішкі істер министрлігі · Ұлттық статистика бюросы · Бас прокуратура<br>
+      Деректер ақпараттық-аналитикалық мақсатта жиналған · 2026
+    </div>
+    <div class="footer-right">v2.6.0 · ОБНОВЛЕНО: 2026-Q2 · CC BY-NC 4.0</div>
+  </div>
+</footer>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const MONTHS = ['Қаң','Ақп','Нау','Сәу','Мам','Мау','Шіл','Там','Қыр','Қаз','Қар','Жел'];
+
+const monthlyData2026 = [21800,19400,23100,24500,25800,26400,27200,28600,25100,23400,22700,19680];
+const monthlyData2025 = [20100,18200,21900,23100,24200,24900,25100,26400,23800,22100,21500,18900];
+
+const crimeCategories = [
+  {label:'Мүліктік қылмыстар', pct:34, color:'#E8281A'},
+  {label:'Зорлық-зомбылық', pct:18, color:'#E89020'},
+  {label:'Экономикалық', pct:22, color:'#2D7DD2'},
+  {label:'Есірткі', pct:11, color:'#8B5CF6'},
+  {label:'Киберқылмыс', pct:9, color:'#1DB8A0'},
+  {label:'Өзге', pct:6, color:'#9AA0B4'},
+];
+
+const regions = [
+  {name:'Алматы қ.',total:62400,per100k:3480,serious:9800,solved:'62%',level:'high'},
+  {name:'Астана қ.',total:42100,per100k:3210,serious:6200,solved:'82%',level:'high'},
+  {name:'Шымкент қ.',total:32600,per100k:2890,serious:4800,solved:'71%',level:'high'},
+  {name:'Қарағанды обл.',total:31200,per100k:2460,serious:5100,solved:'68%',level:'high'},
+  {name:'Маңғыстау обл.',total:19800,per100k:2100,serious:2900,solved:'74%',level:'med'},
+  {name:'Алматы обл.',total:22400,per100k:2150,serious:3400,solved:'65%',level:'med'},
+  {name:'Жамбыл обл.',total:16200,per100k:2020,serious:2400,solved:'66%',level:'med'},
+  {name:'Түркістан обл.',total:20800,per100k:1960,serious:3100,solved:'63%',level:'med'},
+  {name:'Ақтөбе обл.',total:14600,per100k:1790,serious:2200,solved:'72%',level:'low'},
+  {name:'Атырау обл.',total:11400,per100k:1840,serious:1800,solved:'75%',level:'med'},
+  {name:'Павлодар обл.',total:12100,per100k:1720,serious:1900,solved:'76%',level:'low'},
+  {name:'ШҚО',total:14200,per100k:1680,serious:2100,solved:'69%',level:'low'},
+  {name:'Қостанай обл.',total:10900,per100k:1580,serious:1700,solved:'78%',level:'low'},
+  {name:'СҚО',total:7800,per100k:1450,serious:1200,solved:'80%',level:'low'},
+  {name:'БҚО',total:9100,per100k:1620,serious:1400,solved:'77%',level:'low'},
+  {name:'Абай обл.',total:6200,per100k:1540,serious:950,solved:'79%',level:'low'},
+  {name:'Жетісу обл.',total:5900,per100k:1480,serious:880,solved:'81%',level:'low'},
+  {name:'Ұлытау обл.',total:3800,per100k:1340,serious:580,solved:'83%',level:'low'},
+];
+
+const crimeTypes = [
+  {name:'Ұрлық (барлық түрі)',count:68400,pct:100,color:'#E8281A',change:+4.2},
+  {name:'Алаяқтық',count:44200,pct:64.6,color:'#E89020',change:+12.8},
+  {name:'Тонау',count:18600,pct:27.2,color:'#C8A951',change:-2.1},
+  {name:'Бұзақылық',count:16800,pct:24.6,color:'#8B5CF6',change:+1.4},
+  {name:'Есірткі айналымы',count:31600,pct:46.2,color:'#7069B8',change:+5.6},
+  {name:'Экон. қылмыстар',count:28900,pct:42.2,color:'#2D7DD2',change:+9.3},
+  {name:'Зорлық-зомбылық',count:22100,pct:32.3,color:'#D45380',change:-3.8},
+  {name:'Жол апаты (қылмыс)',count:14200,pct:20.7,color:'#F0D080',change:-7.2},
+  {name:'Киберқылмыс',count:25800,pct:37.7,color:'#1DB8A0',change:+34.1},
+  {name:'Өзге',count:17140,pct:25.0,color:'#5C6278',change:+0.8},
+];
+
+const cyberTypes = [
+  {label:'Фишинг', pct:41, color:'#E8281A'},
+  {label:'Онлайн алаяқтық', pct:33, color:'#E89020'},
+  {label:'Деректер ұрлау', pct:18, color:'#2D7DD2'},
+  {label:'Бопсалау', pct:5, color:'#8B5CF6'},
+  {label:'Өзге', pct:3, color:'#9AA0B4'},
+];
+
+const cyberYearData = {
+  labels:['2019','2020','2021','2022','2023','2024','2025','2026'],
+  vals:[4200,6100,8400,11200,15600,19800,24100,25800]
+};
+
+// ============================================================
+// CHARTS
+// ============================================================
+const CHART_DEFAULTS = {
+  color: '#E8EAF0',
+  borderColor: 'rgba(255,255,255,0.07)',
+  gridColor: 'rgba(255,255,255,0.06)',
+  font: 'IBM Plex Sans'
+};
+
+function baseOptions(extra={}) {
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#1E2230',
+        borderColor:'rgba(255,255,255,0.12)',
+        borderWidth:1,
+        titleColor:'#E8EAF0',
+        bodyColor:'#9AA0B4',
+        padding:10,
+        cornerRadius:6
+      }
+    },
+    scales:{
+      x:{
+        grid:{color:CHART_DEFAULTS.gridColor},
+        ticks:{color:'#9AA0B4',font:{family:CHART_DEFAULTS.font,size:10}}
+      },
+      y:{
+        grid:{color:CHART_DEFAULTS.gridColor},
+        ticks:{color:'#9AA0B4',font:{family:CHART_DEFAULTS.font,size:10}}
+      }
+    },
+    ...extra
+  };
+}
+
+// Monthly chart
+new Chart(document.getElementById('monthlyChart'), {
+  type:'line',
+  data:{
+    labels:MONTHS,
+    datasets:[
+      {
+        label:'2026',
+        data:monthlyData2026,
+        borderColor:'#E8281A',
+        backgroundColor:'rgba(232,40,26,0.08)',
+        borderWidth:2,
+        fill:true,
+        tension:0.4,
+        pointRadius:3,
+        pointBackgroundColor:'#E8281A'
+      },
+      {
+        label:'2025',
+        data:monthlyData2025,
+        borderColor:'#5C6278',
+        backgroundColor:'transparent',
+        borderWidth:1.5,
+        borderDash:[4,3],
+        tension:0.4,
+        pointRadius:0
+      }
+    ]
+  },
+  options:{...baseOptions(), plugins:{...baseOptions().plugins, legend:{display:true,labels:{color:'#9AA0B4',boxWidth:20,font:{size:11}}}}}
+});
+
+// Category Pie
+const catCtx = document.getElementById('catChart');
+new Chart(catCtx, {
+  type:'doughnut',
+  data:{
+    labels:crimeCategories.map(c=>c.label),
+    datasets:[{
+      data:crimeCategories.map(c=>c.pct),
+      backgroundColor:crimeCategories.map(c=>c.color),
+      borderWidth:0,
+      hoverOffset:8
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    cutout:'65%',
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#1E2230',
+        borderColor:'rgba(255,255,255,0.12)',
+        borderWidth:1,
+        titleColor:'#E8EAF0',
+        bodyColor:'#9AA0B4',
+        callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}%`}
+      }
+    }
+  }
+});
+const catLeg = document.getElementById('cat-legend');
+crimeCategories.forEach(c=>{
+  catLeg.innerHTML += `<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#9AA0B4"><span style="width:10px;height:10px;border-radius:2px;background:${c.color};flex-shrink:0"></span>${c.label} ${c.pct}%</span>`;
+});
+
+// Age chart
+new Chart(document.getElementById('ageChart'), {
+  type:'bar',
+  data:{
+    labels:['14–17','18–24','25–34','35–44','45–54','55+'],
+    datasets:[{
+      label:'%',
+      data:[6.8,24.2,31.4,22.1,11.3,4.2],
+      backgroundColor:['#8B5CF6','#E8281A','#E89020','#2D7DD2','#1DB8A0','#5C6278'],
+      borderRadius:4,
+      borderWidth:0
+    }]
+  },
+  options:baseOptions({scales:{...baseOptions().scales,y:{...baseOptions().scales.y,ticks:{...baseOptions().scales.y.ticks,callback:v=>v+'%'}}}})
+});
+
+// Trend line (5yr)
+new Chart(document.getElementById('trendLineChart'), {
+  type:'line',
+  data:{
+    labels:['2022','2023','2024','2025','2026'],
+    datasets:[{
+      label:'Барлық қылмыс',
+      data:[258000,266400,274100,278200,287640],
+      borderColor:'#C8A951',
+      backgroundColor:'rgba(200,169,81,0.1)',
+      borderWidth:2,
+      fill:true,
+      tension:0.3,
+      pointRadius:4,
+      pointBackgroundColor:'#C8A951'
+    }]
+  },
+  options:baseOptions()
+});
+
+// Region bars
+const rgnBars = document.getElementById('region-bars');
+const topRegs = [...regions].sort((a,b)=>b.per100k-a.per100k).slice(0,8);
+const maxPer = topRegs[0].per100k;
+topRegs.forEach((r,i)=>{
+  const pct = (r.per100k/maxPer*100).toFixed(0);
+  const col = r.level==='high'?'#E8281A':r.level==='med'?'#E89020':'#1DB8A0';
+  rgnBars.innerHTML += `
+    <div class="crime-bar-item">
+      <div class="crime-bar-label" style="font-size:11px;">${i+1}. ${r.name}</div>
+      <div class="crime-bar-track"><div class="crime-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="crime-bar-val">${r.per100k.toLocaleString()}</div>
+    </div>`;
+});
+
+// Region table
+const tbody = document.getElementById('regionBody');
+regions.sort((a,b)=>b.per100k-a.per100k).forEach((r,i)=>{
+  const sevClass = r.level==='high'?'sev-high':r.level==='med'?'sev-med':'sev-low';
+  const sevText = r.level==='high'?'ЖОҒАРЫ':r.level==='med'?'ОРТА':'ТӨМЕН';
+  tbody.innerHTML += `<tr>
+    <td><span class="rank-num">${i+1}</span></td>
+    <td>${r.name}</td>
+    <td>${r.total.toLocaleString()}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;color:${r.level==='high'?'#E8281A':r.level==='med'?'#E89020':'#1DB8A0'}">${r.per100k}</td>
+    <td>${r.serious.toLocaleString()}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;">${r.solved}</td>
+    <td><span class="severity-badge ${sevClass}">${sevText}</span></td>
+  </tr>`;
+});
+
+// Crime type bars
+const ctBars = document.getElementById('crime-type-bars');
+const maxCt = crimeTypes[0].count;
+crimeTypes.forEach(ct=>{
+  const pct = (ct.count/maxCt*100).toFixed(0);
+  ctBars.innerHTML += `
+    <div class="crime-bar-item">
+      <div class="crime-bar-label">${ct.name}</div>
+      <div class="crime-bar-track"><div class="crime-bar-fill" style="width:${pct}%;background:${ct.color}"></div></div>
+      <div class="crime-bar-val">${ct.count.toLocaleString()}</div>
+    </div>`;
+});
+
+// Change chart (horizontal bar)
+new Chart(document.getElementById('changeChart'), {
+  type:'bar',
+  data:{
+    labels:crimeTypes.map(c=>c.name),
+    datasets:[{
+      label:'% өзгеріс',
+      data:crimeTypes.map(c=>c.change),
+      backgroundColor:crimeTypes.map(c=>c.change>0?'rgba(232,40,26,0.7)':'rgba(29,184,160,0.7)'),
+      borderRadius:3,
+      borderWidth:0
+    }]
+  },
+  options:{
+    ...baseOptions(),
+    indexAxis:'y',
+    scales:{
+      x:{grid:{color:CHART_DEFAULTS.gridColor},ticks:{color:'#9AA0B4',font:{size:10},callback:v=>v+'%'}},
+      y:{grid:{color:'transparent'},ticks:{color:'#9AA0B4',font:{size:10}}}
+    }
+  }
+});
+
+// 5yr category chart
+new Chart(document.getElementById('cat5yrChart'), {
+  type:'line',
+  data:{
+    labels:['2022','2023','2024','2025','2026'],
+    datasets:[
+      {label:'Мүліктік',data:[72000,74200,75800,77100,79400],borderColor:'#E8281A',borderWidth:2,tension:0.3,pointRadius:3,fill:false,pointBackgroundColor:'#E8281A'},
+      {label:'Экономикалық',data:[22000,24100,26400,27800,28900],borderColor:'#2D7DD2',borderWidth:2,tension:0.3,pointRadius:3,fill:false,pointBackgroundColor:'#2D7DD2'},
+      {label:'Есірткі',data:[26000,27800,29200,30400,31600],borderColor:'#8B5CF6',borderWidth:2,tension:0.3,pointRadius:3,fill:false,pointBackgroundColor:'#8B5CF6'},
+      {label:'Киберқылмыс',data:[7600,9800,13200,19200,25800],borderColor:'#1DB8A0',borderWidth:2,tension:0.3,pointRadius:3,fill:false,pointBackgroundColor:'#1DB8A0'},
+    ]
+  },
+  options:{...baseOptions(),plugins:{...baseOptions().plugins,legend:{display:true,labels:{color:'#9AA0B4',boxWidth:16,font:{size:10}}}}}
+});
+
+// 3yr trend
+const trend3Labels = [];
+['2024','2025','2026'].forEach(yr=>MONTHS.forEach(m=>trend3Labels.push(`${m} ${yr}`)));
+const trend3Data = {
+  '2024':[17100,15900,18200,19100,20400,21100,21800,22400,20100,18900,18200,15900],
+  '2025':[20100,18200,21900,23100,24200,24900,25100,26400,23800,22100,21500,18900],
+  '2026':monthlyData2026
+};
+new Chart(document.getElementById('trend3yrChart'), {
+  type:'line',
+  data:{
+    labels:trend3Labels,
+    datasets:[
+      {label:'2024',data:trend3Data['2024'].concat(Array(24).fill(null)),borderColor:'#444870',borderWidth:1.5,tension:0.3,pointRadius:0,fill:false},
+      {label:'2025',data:Array(12).fill(null).concat(trend3Data['2025']).concat(Array(12).fill(null)),borderColor:'#9AA0B4',borderWidth:1.5,tension:0.3,pointRadius:0,fill:false},
+      {label:'2026',data:Array(24).fill(null).concat(trend3Data['2026']),borderColor:'#E8281A',borderWidth:2,tension:0.3,pointRadius:0,fill:false,backgroundColor:'rgba(232,40,26,0.05)'},
+    ]
+  },
+  options:{...baseOptions(),plugins:{...baseOptions().plugins,legend:{display:true,labels:{color:'#9AA0B4',boxWidth:16,font:{size:11}}}}}
+});
+
+// Weekday
+new Chart(document.getElementById('weekdayChart'), {
+  type:'bar',
+  data:{
+    labels:['Дс','Сс','Ср','Бс','Жм','Сб','Жк'],
+    datasets:[{
+      label:'Орташа',
+      data:[820,890,910,1020,1340,1680,1420],
+      backgroundColor:['#2D7DD2','#2D7DD2','#2D7DD2','#2D7DD2','#E89020','#E8281A','#E89020'],
+      borderRadius:4,borderWidth:0
+    }]
+  },
+  options:baseOptions()
+});
+
+// Hour chart
+const hourLabels = Array.from({length:24},(_,i)=>`${i}:00`);
+const hourData = [180,120,90,70,80,110,280,420,560,480,520,680,740,660,590,620,810,1040,1380,1520,1460,1200,920,620];
+new Chart(document.getElementById('hourChart'), {
+  type:'line',
+  data:{
+    labels:hourLabels,
+    datasets:[{
+      label:'Орташа',
+      data:hourData,
+      borderColor:'#C8A951',
+      backgroundColor:'rgba(200,169,81,0.1)',
+      fill:true,tension:0.4,pointRadius:0,borderWidth:2
+    }]
+  },
+  options:baseOptions()
+});
+
+// Demo chart
+new Chart(document.getElementById('demoChart'), {
+  type:'bar',
+  data:{
+    labels:['14–17','18–24','25–34','35–44','45–54','55+'],
+    datasets:[
+      {label:'Ер',data:[7500,29200,38600,26800,13400,5100],backgroundColor:'rgba(45,125,210,0.8)',borderRadius:3,borderWidth:0},
+      {label:'Әйел',data:[720,3800,5200,4100,2200,980],backgroundColor:'rgba(212,83,128,0.8)',borderRadius:3,borderWidth:0},
+    ]
+  },
+  options:{...baseOptions(),plugins:{...baseOptions().plugins,legend:{display:true,labels:{color:'#9AA0B4',boxWidth:16,font:{size:11}}}}}
+});
+
+// Juvenile
+new Chart(document.getElementById('juvenileChart'), {
+  type:'line',
+  data:{
+    labels:['2022','2023','2024','2025','2026'],
+    datasets:[{
+      label:'Жасөспірім қылмысы',
+      data:[6100,6800,7200,7700,8240],
+      borderColor:'#8B5CF6',
+      backgroundColor:'rgba(139,92,246,0.1)',
+      fill:true,tension:0.3,pointRadius:4,borderWidth:2,pointBackgroundColor:'#8B5CF6'
+    }]
+  },
+  options:baseOptions()
+});
+
+// Social
+new Chart(document.getElementById('socialChart'), {
+  type:'bar',
+  data:{
+    labels:['Жұмыссыз','Төменгі білім','Орта білім','Жоғары білім','Алдыңғы рецидив','Мас күйде'],
+    datasets:[{
+      label:'%',
+      data:[54,28,44,18,38,31],
+      backgroundColor:['#E8281A','#E89020','#C8A951','#1DB8A0','#8B5CF6','#2D7DD2'],
+      borderRadius:4,borderWidth:0
+    }]
+  },
+  options:{...baseOptions(),scales:{...baseOptions().scales,y:{...baseOptions().scales.y,ticks:{...baseOptions().scales.y.ticks,callback:v=>v+'%'}}}}
+});
+
+// Cyber trend
+new Chart(document.getElementById('cyberTrendChart'), {
+  type:'bar',
+  data:{
+    labels:cyberYearData.labels,
+    datasets:[{
+      label:'Киберқылмыс',
+      data:cyberYearData.vals,
+      backgroundColor:cyberYearData.vals.map((_,i)=>i===7?'#1DB8A0':'rgba(29,184,160,0.4)'),
+      borderRadius:4,borderWidth:0
+    }]
+  },
+  options:baseOptions()
+});
+
+// Cyber types pie
+const ctCtx = document.getElementById('cyberTypeChart');
+new Chart(ctCtx, {
+  type:'doughnut',
+  data:{
+    labels:cyberTypes.map(c=>c.label),
+    datasets:[{
+      data:cyberTypes.map(c=>c.pct),
+      backgroundColor:cyberTypes.map(c=>c.color),
+      borderWidth:0,hoverOffset:8
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E2230',borderColor:'rgba(255,255,255,0.12)',borderWidth:1,titleColor:'#E8EAF0',bodyColor:'#9AA0B4',callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}%`}}}}
+});
+const cyberLeg = document.getElementById('cyber-legend');
+cyberTypes.forEach(c=>{
+  cyberLeg.innerHTML += `<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#9AA0B4"><span style="width:10px;height:10px;border-radius:2px;background:${c.color};flex-shrink:0"></span>${c.label} ${c.pct}%</span>`;
+});
+
+// Cyber victim
+new Chart(document.getElementById('cyberVictimChart'), {
+  type:'bar',
+  data:{
+    labels:['18–24','25–34','35–44','45–54','55–64','65+'],
+    datasets:[
+      {label:'Жертвалар саны',data:[3800,5400,4200,3100,2600,1800],backgroundColor:'rgba(29,184,160,0.7)',borderRadius:3,borderWidth:0},
+      {label:'Орт. шығын (млн ₸)',data:[0.8,2.4,3.8,5.2,4.1,3.6],backgroundColor:'rgba(200,169,81,0.7)',borderRadius:3,borderWidth:0,yAxisID:'y2'}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:true,labels:{color:'#9AA0B4',boxWidth:16,font:{size:11}}},
+      tooltip:{backgroundColor:'#1E2230',borderColor:'rgba(255,255,255,0.12)',borderWidth:1,titleColor:'#E8EAF0',bodyColor:'#9AA0B4'}
+    },
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9AA0B4',font:{size:10}}},
+      y:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9AA0B4',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#C8A951',font:{size:10},callback:v=>v+'М₸'}}
+    }
+  }
+});
+
+// ============================================================
+// HEATMAP
+// ============================================================
+const hmCats = ['Ұрлық','Алаяқтық','Зорлық','Есірткі','Кибер','Экон.'];
+const hmData = [
+  [1.2,0.9,1.1,1.3,1.4,1.5,1.6,1.7,1.3,1.2,1.1,0.8],
+  [0.8,0.7,0.9,1.1,1.2,1.3,1.4,1.5,1.1,1.0,0.9,0.7],
+  [0.6,0.5,0.6,0.7,0.8,1.0,1.1,1.0,0.8,0.7,0.6,0.5],
+  [0.9,0.8,1.0,1.0,1.1,1.2,1.3,1.2,1.0,0.9,0.8,0.7],
+  [0.7,0.6,0.8,1.0,1.2,1.3,1.4,1.5,1.1,1.0,0.9,0.8],
+  [0.5,0.4,0.6,0.8,0.9,1.0,1.1,1.1,0.8,0.7,0.6,0.5],
+];
+
+const hmCont = document.getElementById('heatmap-cont');
+let hmHtml = `<div class="heatmap-grid">`;
+hmHtml += `<div class="hm-cell hm-label"></div>`;
+MONTHS.forEach(m=>{ hmHtml += `<div class="hm-cell hm-month" style="justify-content:center;">${m}</div>`; });
+hmCats.forEach((cat,ci)=>{
+  hmHtml += `<div class="hm-cell hm-label" style="white-space:nowrap;font-size:9px;">${cat}</div>`;
+  hmData[ci].forEach(v=>{
+    const alpha = (v/1.7);
+    const r = Math.round(10 + alpha*222);
+    const g = Math.round(12 + alpha*26);
+    const b = Math.round(18 + alpha*8);
+    const txtColor = alpha > 0.6 ? '#fff' : '#9AA0B4';
+    hmHtml += `<div class="hm-cell" style="background:rgba(${r},${g},${b},0.85);color:${txtColor}">${v.toFixed(1)}</div>`;
+  });
+});
+hmHtml += `</div>`;
+hmCont.innerHTML = hmHtml;
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Animate bars on load
+setTimeout(()=>{
+  document.querySelectorAll('.crime-bar-fill,.bar-inline').forEach(el=>{
+    const w = el.style.width;
+    el.style.width = '0';
+    setTimeout(()=>{ el.style.width = w; },100);
+  });
+},300);
+</script>
+</body>
+</html>
